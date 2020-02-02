@@ -1,0 +1,25 @@
+Problem -> Geely auto wants to enter US market and 
+wants to know which factors determines the price of the cars 
+business goal -> model the price of cars with the avaible 
+variables 
+
+what does the boxplot show for the prices of the car? 
+- there is an outlier for the prices that are greater than 31,000 
+- the porche seems to have higher prices because of the brand 
+
+
+- look at the distrubtions of the prices and other important variables to find the correlation 
+    - car prices disturbtions 
+    - how to write efficient code for pairplot and use the floats and int types 
+    -other variables disturbtions 
+
+- feature selection of the cars 
+
+    engine size, curweight, car width, wheel base, car length
+    -horsepower, boreratio, door number, carbody, cylinder number 
+    and drive wheel 
+
+    -11 independent variables 
+
+- data preparation 
+    - create dummy variables for the categorical objects 
