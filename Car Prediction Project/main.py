@@ -28,7 +28,7 @@ sns.set(style='darkgrid')
 import matplotlib.ticker as ticker
 import matplotlib.ticker as plticker
 
-df_auto = pd.read_csv('CarPrice_Assignment.csv')
+df_auto = pd.read_csv('/Users/anuragshrestha/Desktop/Multi-Linear-/Car Prediction Project/CarPrice_Assignment.csv')
 
 print(df_auto.head) 
 
@@ -94,25 +94,21 @@ sns.distplot(df_new['price'])
 coloumns_numbers = df_new.select_dtypes(exclude = ['object'])
 print("count of float and int:", coloumns_numbers.dtypes) 
 
-
-
-
-
-sns.pairplot(coloumns_numbers, vars = ['price',
-'wheelbase', 'carlength', 'carwidth','carheight',        
-'curbweight',      
-'enginesize'])
+#sns.pairplot(coloumns_numbers, vars = ['price',
+#'wheelbase', 'carlength', 'carwidth','carheight',        
+#'curbweight',      
+#enginesize'])
 
 # engine size, curweight, car width, wheel base and car length has a linear 
 
-sns.pairplot(coloumns_numbers, vars = ['price', 
-'boreratio',        
-'stroke',              
-'compressionratio',   
-'horsepower',       
-'peakrpm',        
-'citympg',             
-'highwaympg'])
+#sns.pairplot(coloumns_numbers, vars = ['price', 
+#'boreratio',        
+#'stroke',              
+#'compressionratio',   
+#'horsepower',       
+#'peakrpm',        
+#'citympg',             
+#'highwaympg'])
 
 #horsepower and boreratio has postive linear correlation with the price 
 # city and Highway mpg have negative correlation with price 
@@ -149,12 +145,78 @@ plt.show()
 # cylindernumber = the amount of horse power. 
 #drive wheel should have an impact on the prices as well 
 
-important_var = ['enginzesize', 'curbweight','carwidth', 
+
+important_var = ['price', 'enginesize', 'curbweight','carwidth', 
 'wheelbase','carlength', 'horsepower', 'boreratio',
 'citympg','highwaympg', 'doornumber','carbody',
-'cylindernumber', 'drivewheel']
+'cylindernumber', 'drivewheel', 'symboling', 'aspiration']
 
-impotant_ cat= ['doornumber','carbody', 'cylindernumber', 
-'drivewheel']
+df_new = df_new[important_var]
 
+important_cat= ['doornumber','carbody', 'cylindernumber', 
+'drivewheel', 'symboling', 'aspiration']
+
+
+#dummy variables 
+# create dummy variables for the catorogical columns and delete the ones we are using 
+
+dummies_cat = pd.get_dummies(df_new[important_cat], drop_first= True)
+
+
+df_new = pd.concat([df_new, dummies_cat], axis= 1) #connecting the dummy variables to the data frame 
+
+df_new.drop(important_cat, axis = 1, inplace = True)
+
+#MachineLearning 
+
+y = df_new['price']
+
+X = df_new.iloc[:,1:] #all the variables but price that I have selected priviously
+
+X_train, X_test, y_train, y_test = train_test_split( X, y, test_size = 0.3, random_state = 0)
+
+
+Multi_reggessor = LinearRegression()
+Multi_reggessor.fit(X_train, y_train)
+
+#prediction the variables test
+test_prediction = Multi_reggessor.predict(X_test)
+
+print(test_prediction)
+print(y_test)
+
+print(r2_score(y_test, test_prediction)) #80% fit 
+
+#backward elimination 
+
+def backwardElimination(x,SL):
+    numVars = len(x[0])
+    temp = np.zeros((205,10)).astype(int)
+    for i in range(0, numVars): 
+        regressor_OLS = sm.OLS(y,x).fit()
+        maxVar = max(regressor_OLS.pvalues).astype(float)
+        adjR_before = regressor_OLS.rsquared_adj.astype(float)
+        if maxVar > SL: 
+            for j in range(0, numVars - i): 
+                if (regressor_OLS.pvalues[j].astype(float) == maxVar):
+                    temp[:,j] = x[:, j]
+                    x = np.delete(x,j,1)
+                    tmp_regressor = sm.OLS(y, x).fit()
+                    adjR_after = tmp_regressor.rsquared_adj.astype(float)
+                    if (adjR_before >= adjR_after):
+                        x_rollback = np.hstack((x, temp[:,[0,j]]))
+                        x_rollback = np.delete(x_rollback, j, 1)
+                        print (regressor_OLS.summary())
+                        return x_rollback
+                    else:
+                        continue
+    regressor_OLS.summary()
+    return x
+ 
+SL = 0.05
+X_opt = X[:, [0, 1, 2, 3, 4, 5,6,7,8,9,10,11,12,13,14,15]]
+X_Modeled = backwardElimination(X_opt, SL)
+
+
+ 
 # %%
