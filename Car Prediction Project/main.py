@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 from sklearn.base import TransformerMixin
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import LinearRegression
@@ -167,13 +167,27 @@ df_new = pd.concat([df_new, dummies_cat], axis= 1) #connecting the dummy variabl
 
 df_new.drop(important_cat, axis = 1, inplace = True)
 
+print(df_new)
+
 #MachineLearning 
 
-y = df_new['price']
+y = df_new.iloc[:,0] # price 
 
 X = df_new.iloc[:,1:] #all the variables but price that I have selected priviously
 
+
 X_train, X_test, y_train, y_test = train_test_split( X, y, test_size = 0.3, random_state = 0)
+#splitting the datas into train and set 
+
+#normalization of the variables 
+
+scaler = StandardScaler()
+
+num_column = ['enginesize', 'curbweight', 'carwidth', 'wheelbase', 
+'carlength', 'horsepower', 'boreratio', 'citympg', 'highwaympg']
+
+X_train[num_column] = scaler.fit_transform(X_train[num_column])
+X_test[num_column] = scaler.fit_transform(X_test[num_column]) 
 
 
 Multi_reggessor = LinearRegression()
@@ -189,33 +203,20 @@ print(r2_score(y_test, test_prediction)) #80% fit
 
 #backward elimination 
 
-def backwardElimination(x,SL):
-    numVars = len(x[0])
-    temp = np.zeros((205,10)).astype(int)
-    for i in range(0, numVars): 
-        regressor_OLS = sm.OLS(y,x).fit()
-        maxVar = max(regressor_OLS.pvalues).astype(float)
-        adjR_before = regressor_OLS.rsquared_adj.astype(float)
-        if maxVar > SL: 
-            for j in range(0, numVars - i): 
-                if (regressor_OLS.pvalues[j].astype(float) == maxVar):
-                    temp[:,j] = x[:, j]
-                    x = np.delete(x,j,1)
-                    tmp_regressor = sm.OLS(y, x).fit()
-                    adjR_after = tmp_regressor.rsquared_adj.astype(float)
-                    if (adjR_before >= adjR_after):
-                        x_rollback = np.hstack((x, temp[:,[0,j]]))
-                        x_rollback = np.delete(x_rollback, j, 1)
-                        print (regressor_OLS.summary())
-                        return x_rollback
-                    else:
-                        continue
-    regressor_OLS.summary()
-    return x
- 
-SL = 0.05
-X_opt = X[:, [0, 1, 2, 3, 4, 5,6,7,8,9,10,11,12,13,14,15]]
-X_Modeled = backwardElimination(X_opt, SL)
+#bias term (constant) are not interpretted with the with the statsmodel lib 
+
+X_train = np.append(arr = np.ones([X_train.shape[0],1]).astype(int), 
+values = X_train, axis = 1) #adding the the first variable = 1 so it takes the constant term 
+
+X_opt = [0,1,4,6,11,12,13,14,16]
+regressor = sm.OLS(y_train, X_train[:, X_opt]).fit()
+print(regressor.summary())
+
+X_train, X_test, y_train, y_test = train_test_split(X[:,[0,1,4,6,11,12,13,14,16],
+y, test_size = 0.3, random_state = 0)
+
+
+
 
 
  
