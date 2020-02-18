@@ -10,12 +10,10 @@ from datetime import datetime, timedelta
 # machine learning 
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
-from sklearn.base import TransformerMixin
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
 from sklearn.feature_selection import RFE
-from sklearn.linear_model import LinearRegression
+from sklearn  import linear_model
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.metrics import r2_score
 
@@ -169,55 +167,41 @@ df_new.drop(important_cat, axis = 1, inplace = True)
 
 print(df_new)
 
-#MachineLearning 
+#Scaling to normal 
+
+scaler = preprocessing.StandardScaler()
+
+num_column = ['price','enginesize', 'curbweight', 'carwidth', 'wheelbase', 
+'carlength', 'horsepower', 'boreratio', 'citympg', 'highwaympg']
+
+df_new[num_column] = scaler.fit_transform(df_new[num_column])
+
 
 y = df_new.iloc[:,0] # price 
 
 X = df_new.iloc[:,1:] #all the variables but price that I have selected priviously
 
 
-X_train, X_test, y_train, y_test = train_test_split( X, y, test_size = 0.3, random_state = 0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 0)
 #splitting the datas into train and set 
 
-#normalization of the variables 
 
-scaler = StandardScaler()
-
-num_column = ['enginesize', 'curbweight', 'carwidth', 'wheelbase', 
-'carlength', 'horsepower', 'boreratio', 'citympg', 'highwaympg']
-
-X_train[num_column] = scaler.fit_transform(X_train[num_column])
-X_test[num_column] = scaler.fit_transform(X_test[num_column]) 
-
-
-Multi_reggessor = LinearRegression()
+Multi_reggessor = linear_model.Ridge(alpha= 0.05, fit_intercept = True)
 Multi_reggessor.fit(X_train, y_train)
+
 
 #prediction the variables test
 test_prediction = Multi_reggessor.predict(X_test)
 
-print(test_prediction)
-print(y_test)
 
-print(r2_score(y_test, test_prediction)) #80% fit 
+result = pd.DataFrame({"Actual": y_test, "Predicted": test_prediction})
+print(result)
 
-#backward elimination 
+print(r2_score(y_test, test_prediction)) 
 
-#bias term (constant) are not interpretted with the with the statsmodel lib 
-
-X_train = np.append(arr = np.ones([X_train.shape[0],1]).astype(int), 
-values = X_train, axis = 1) #adding the the first variable = 1 so it takes the constant term 
-
-X_opt = [0,1,4,6,11,12,13,14,16]
-regressor = sm.OLS(y_train, X_train[:, X_opt]).fit()
-print(regressor.summary())
-
-X_train, X_test, y_train, y_test = train_test_split(X[:,[0,1,4,6,11,12,13,14,16],
-y, test_size = 0.3, random_state = 0)
+#the model explains 81% of the target variable variations 
 
 
 
 
-
- 
 # %%
