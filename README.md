@@ -1,5 +1,4 @@
-# Multi-Linear-Car-Price-Prediction
+# Car-Price-Prediction
 
 
-The dataset was provided by https://www.kaggle.com/hellbuoy/car-price-prediction. The goal of this project was to apply the theory of multiple regression I learned from my Econometrics course at UCLA and use machine learning to predict the price output of a car with multiple independent variables. 
-
+The dataset was provided by https://www.kaggle.com/hellbuoy/car-price-prediction. Multi-linear Regression model was used to predict the price of the cars after analysis the dataset and observing linear relationships with the features.
